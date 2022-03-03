@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'install_wins/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'install_wins/**'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download Wins EXE and zip instal_wins directory
+        run: |
+          mkdir -p ./install_wins/dsc_resources
+          curl -L https://github.com/rancher/wins/releases/download/v0.1.3/wins.exe -o ./install_wins/dsc_resources/wins.exe
+          zip -R install_wins.zip install_wins
+      - name: Create Release and upload zipped install_wins directory
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          gh release create v0.0.${GITHUB_RUN_NUMBER}
+          gh release upload v0.0.${GITHUB_RUN_NUMBER} ./aks_setup.zip
+    
